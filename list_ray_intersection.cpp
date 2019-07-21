@@ -4,12 +4,25 @@
 #include "float.h"
 #include "camera.h"
 
+vec3 random_in_unit_sphere() {
+  vec3 p;
+  do {
+    p = 2.0*vec3(drand48(), drand48(), drand48()) - vec3(1,1,1);
+  } while (p.squared_length() >= 1.0);
+  return p;
+}
+
 vec3 color(const ray& r, hitable *world) {
   hit_record rec;
   // t_min=0.0 discards intersection points of objects that are behind the camera.
-  if (world->hit(r, 0.0, MAXFLOAT, rec)) {
-    // Map unit vector component value [-1,1] to [0,1].
-    return 0.5*vec3(rec.normal.x()+1, rec.normal.y()+1, rec.normal.z()+1);
+  // t_min=0.001 also discards reflected rays whose origin is not exactly t=0, but some floating point approximation of it.
+  // Those rays cause a problem called shadow acne: The reflected ray intersects its origin surface: This extra bounce will
+  // half the origin point's color, causing it to appear darker than the surrounding points.
+  if (world->hit(r, 0.001, MAXFLOAT, rec)) {
+    vec3 target = rec.p + rec.normal + random_in_unit_sphere();
+    // Recursively trace the ray until it doesn't hit anything, halving the color each time it bounces.
+    // The color of a hitpoint whose ray bounces too many times tends to black.
+    return 0.5*color(ray(rec.p, target-rec.p), world);
   } 
   vec3 unit_direction = unit_vector(r.direction());
   float t = 0.5 * (unit_direction.y() + 1.0);
@@ -44,6 +57,8 @@ int main() {
 
       // Average of pixel color samples.
       col /= float(ns);
+      // Gamma correction.
+      col = vec3(sqrt(col[0]), sqrt(col[1]), sqrt(col[2]));
       int ir = int(255.99*col[0]);
       int ig = int(255.99*col[1]);
       int ib = int(255.99*col[2]);
