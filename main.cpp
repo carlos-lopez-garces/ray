@@ -78,7 +78,12 @@ int main() {
       vec3 col(0, 0, 0);
 
       for (int s=0; s < ns; s++) {
-        // Pixel sample coordinate.
+        // Pixel sample. At the image level, pixel coordinates are discrete, e.g. (1,5) or (1079,35).
+        // At the scene level, though, a pixel covers a frustum volume of unit-length base. Here, (i,j) is
+        // the lower left corner of that base, which extends continuously to (i+1,j+1). The sample is taken
+        // from within the base, uniformly at random from (i,j) to (i+1,j+1). The frustum may enclose 
+        // portions of multiple objects of the scene; therefore, samples may pick the color of different
+        // objects.
         float u = float(i + drand48()) / float(nx);
         float v = float(j + drand48()) / float(ny);
         ray r = cam.get_ray(u, v);
