@@ -1,50 +1,47 @@
-#ifndef SPHEREH
-#define SPHEREH
+#ifndef SPHERE_H
+#define SPHERE_H
 
-#include "hitable.h"
+#include "hittable.h"
+#include "vec3.h"
 
-class sphere: public hitable {
+class sphere : public hittable {
 public:
-  sphere() {}
+  sphere() : radius(0.0) {};
+  sphere(point3 center, double radius) : center(center), radius(radius) {};
 
-  sphere(vec3 cen, float r, material *m) : center(cen), radius(r), mat(m) {};
+  virtual bool 
+    hit(const ray& r, double t_min, double t_max, hit_record& rec) const;
 
-  virtual bool hit(const ray& r, float tmin, float tmax, hit_record& rec) const;
-
-  vec3 center;
-  float radius;
-  material *mat;
+  point3 center;
+  double radius;
 };
 
-bool sphere::hit(const ray& r, float t_min, float t_max, hit_record& rec) const {
+bool sphere::hit(const ray& r, double t_min, double t_max, hit_record& rec)
+  const {
   vec3 oc = r.origin() - center;
-  float a = dot(r.direction(), r.direction());
-  float b = dot(oc, r.direction());
-  float c = dot(oc, oc) - radius*radius;
-  // 0, 1, 2 roots.
-  float discriminant = b*b - a*c;
+  auto a = r.direction().length_squared();
+  auto half_b = dot(oc, r.direction());
+  auto c = oc.length_squared() - radius * radius;
+  auto discriminant = half_b * half_b - a * c;
+
   if (discriminant > 0) {
-    // Quadratic formula. Root of closest hit.
-    float temp = (-b - sqrt(discriminant))/a;
+    auto root = sqrt(discriminant);
+    auto temp = (-half_b - root) / a;
     if (temp < t_max && temp > t_min) {
       rec.t = temp;
-      rec.p = r.point_at_parameter(rec.t);
-      // Normalized.
+      rec.p = r.at(rec.t);
       rec.normal = (rec.p - center) / radius;
-      rec.mat_ptr = mat;
       return true;
     }
-    // Root of farthest hit.
-    temp = (-b + sqrt(discriminant))/a;
+    temp = (-half_b + root) / a;
     if (temp < t_max && temp > t_min) {
       rec.t = temp;
-      rec.p = r.point_at_parameter(rec.t);
-      // Normalized.
+      rec.p = r.at(rec.t);
       rec.normal = (rec.p - center) / radius;
-      rec.mat_ptr = mat;
       return true;
     }
   }
+
   return false;
 }
 
