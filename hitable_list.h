@@ -1,24 +1,27 @@
-#ifndef HITABLELISTH
-#define HITABLELISTH
+#ifndef HITTABLE_LIST_H
+#define HITTABLE_LIST_H
 
-#include "hitable.h"
+#include "hittable.h"
 
-class hitable_list: public hitable {
+#include <memory>
+#include <vector>
+
+class hittable_list: public hittable {
 public:
-  hitable_list() {}
+  hittable_list() {}
   
-  hitable_list(hitable** l, int n) { 
+  hittable_list(hittable** l, int n) { 
     list = l;
     list_size = n;
   }
 
   virtual bool hit(const ray& r, float t_min, float t_max, hit_record& rec) const;
 
-  hitable ** list;
+  hittable ** list;
   int list_size;
 };
 
-bool hitable_list::hit(const ray& r, float t_min, float t_max, hit_record& rec) const {
+bool hittable_list::hit(const ray& r, float t_min, float t_max, hit_record& rec) const {
   hit_record temp_rec;
   bool hit_anything = false;
   double closest_so_far = t_max;
