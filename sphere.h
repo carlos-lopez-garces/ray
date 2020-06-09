@@ -26,18 +26,25 @@ bool sphere::hit(const ray& r, double t_min, double t_max, hit_record& rec)
 
   if (discriminant > 0) {
     auto root = sqrt(discriminant);
+    // One root.
     auto temp = (-half_b - root) / a;
     if (temp < t_max && temp > t_min) {
       rec.t = temp;
       rec.p = r.at(rec.t);
-      rec.normal = (rec.p - center) / radius;
+      vec3 outward_normal = (rec.p - center) / radius;
+      // The outward_normal always points away from the surface. But the hit's
+      // normal depends on whether it is on the front or back face of the
+      // surface.
+      rec.set_face_normal(r, outward_normal);
       return true;
     }
+    // The other root.
     temp = (-half_b + root) / a;
     if (temp < t_max && temp > t_min) {
       rec.t = temp;
       rec.p = r.at(rec.t);
-      rec.normal = (rec.p - center) / radius;
+      vec3 outward_normal = (rec.p - center) / radius;
+      rec.set_face_normal(r, outward_normal);
       return true;
     }
   }
