@@ -6,16 +6,25 @@
 
 class sphere : public hittable {
 public:
-  sphere() : radius(0.0), color(0, 0, 0) {};
-  sphere(point3 center, double radius, color color) 
-    : center(center), radius(radius), color(color) {};
+  sphere() : radius(0.0), exterior_color(0, 0, 0), interior_color(0, 0, 0) {};
+  sphere(
+    point3 center,
+    double radius,
+    color exterior_color,
+    color interior_color
+  )
+    : center(center),
+      radius(radius),
+      exterior_color(exterior_color),
+      interior_color(interior_color) {};
 
   virtual bool 
     hit(const ray& r, double t_min, double t_max, hit_record& rec) const;
 
   point3 center;
   double radius;
-  color color;
+  color exterior_color;
+  color interior_color;
 };
 
 bool sphere::hit(const ray& r, double t_min, double t_max, hit_record& rec)
@@ -33,7 +42,7 @@ bool sphere::hit(const ray& r, double t_min, double t_max, hit_record& rec)
     if (temp < t_max && temp > t_min) {
       rec.t = temp;
       rec.p = r.at(rec.t);
-      rec.color = color;
+      rec.color = exterior_color;
       vec3 outward_normal = (rec.p - center) / radius;
       // The outward_normal always points away from the surface. But the hit's
       // normal depends on whether it is on the front or back face of the
@@ -46,7 +55,7 @@ bool sphere::hit(const ray& r, double t_min, double t_max, hit_record& rec)
     if (temp < t_max && temp > t_min) {
       rec.t = temp;
       rec.p = r.at(rec.t);
-      rec.color = color;
+      rec.color = interior_color;
       vec3 outward_normal = (rec.p - center) / radius;
       rec.set_face_normal(r, outward_normal);
       return true;

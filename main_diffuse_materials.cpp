@@ -90,13 +90,15 @@ int main() {
     make_shared<sphere>(
       point3(0, 0, -1), 
       0.5, 
-      color(random_double(), random_double(), random_double())
+      color(157.0/256.0, 163.0/256.0, 154.0/256.0),
+      color(219.0/256.0, 41.0/256.0, 85.0/256.0)
     )
   );
   scene.add(
     make_shared<sphere>(
       point3(0, -100.5, -1), 
       100,
+      color(random_double(), random_double(), random_double()),
       color(random_double(), random_double(), random_double())
     )
   );
@@ -116,7 +118,7 @@ int main() {
         auto v = (double(j) + sample_offset_v) / (double(image_height) - 1);
         ray r = cam.get_ray(u, v);
         pixel_color += ray_color(
-          r, scene, bg_color_1, bg_color_2, 0.5, max_bounces, false
+          r, scene, bg_color_1, bg_color_2, 0.5, max_bounces, true
         );
       }
       write_color(std::cout, pixel_color, samples_per_pixel);
