@@ -1,6 +1,8 @@
 #ifndef VEC3_H
 #define VEC3_H
 
+#include "common.h"
+
 #include <math.h>
 #include <stdlib.h>
 #include <iostream>
@@ -10,6 +12,14 @@ public:
   vec3() : e{0, 0, 0} {}
   
   vec3(double e0, double e1, double e2) : e{e0, e1, e2} {}
+
+  inline static vec3 random() {
+    return vec3(random_double(), random_double(), random_double());
+  }
+
+  inline static vec3 random(double min, double max) {
+    return vec3(random_double(min, max), random_double(min, max), random_double(min, max));
+  }
 
   double x() const { return e[0]; }
   double y() const { return e[1]; }

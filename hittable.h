@@ -7,6 +7,7 @@ struct hit_record {
   point3 p;
   vec3 normal;
   double t;
+  color color;
 
   // front_face tells if the surface was hit on its front face / exterior.
   bool front_face;
