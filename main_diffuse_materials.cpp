@@ -18,13 +18,16 @@ color ray_color(
   const color bg_color_1,
   const color bg_color_2,
   double absorption_factor, 
-  int bounces
+  int bounces,
+  bool use_hit_color
 ) {
   if (bounces < 0) {
     return color(0.0, 0.0, 0.0);
   }
 
   hit_record hit;
+  // t_min is 0.001, instead of 0.0, to avoid shadow acne caused by the bouncing
+  // ray hitting its origin surface.
   if (scene.hit(r, 0.001, infinity, hit)) {
     color bounce_color;
 
@@ -32,10 +35,20 @@ color ray_color(
       = sample_unit_sphere(hit.p + unit_vector(hit.normal));
     ray bounce_ray(hit.p, unit_sphere_sample_point - hit.p);
     bounce_color = ray_color(
-      bounce_ray, scene, bg_color_1, bg_color_2, absorption_factor, bounces - 1
+      bounce_ray,
+      scene,
+      bg_color_1,
+      bg_color_2,
+      absorption_factor,
+      bounces - 1,
+      use_hit_color
     );
 
-    return absorption_factor * (hit.color + bounce_color);
+    color sample_color = absorption_factor * bounce_color;
+    if (use_hit_color) {
+      sample_color += absorption_factor * hit.color;
+    }
+    return sample_color;
   }
 
   // Sample the background, blending blue and white linearly.
@@ -50,8 +63,8 @@ int main() {
   const int samples_per_pixel = 100;
   const int max_bounces = 50;
   const double absorption_factor = 0.5;
-  const color bg_color_blue(0.0, 0.0, 0.5);
-  const color bg_color_white(1.0, 1.0, 1.0);
+  const color bg_color_1(0.5, 0.7, 1.0);
+  const color bg_color_2(1.0, 1.0, 1.0);
 
   std::cout << "P3\n" << image_width << " " << image_height << "\n255\n";
 
@@ -93,7 +106,7 @@ int main() {
         auto v = (double(j) + sample_offset_v) / (double(image_height) - 1);
         ray r = cam.get_ray(u, v);
         pixel_color += ray_color(
-          r, scene, bg_color_blue, bg_color_white, 0.5, max_bounces
+          r, scene, bg_color_1, bg_color_2, 0.5, max_bounces, false
         );
       }
       write_color(std::cout, pixel_color, samples_per_pixel);
