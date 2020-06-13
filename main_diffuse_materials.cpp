@@ -6,9 +6,19 @@
 
 #include <iostream>
 
-point3 sample_unit_sphere(point3 center) {
+point3 sample_unit_cube(point3 center) {
   vec3 random_direction = vec3::random(-1.0, 1.0);
   return unit_vector(center + random_direction);
+}
+
+point3 sample_unit_sphere(point3 center) {
+  while (true) {
+    // Sample an axis-aligned unit cube; reject the sample if it is outside the
+    // unit sphere.
+    vec3 random_direction = vec3::random(-1.0, 1.0);
+    if (random_direction.length_squared() > 1.0) continue;
+    return unit_vector(center + random_direction);
+  }
 }
 
 // ray_color samples the color of a scene using the given ray.
