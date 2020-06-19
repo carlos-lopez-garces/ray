@@ -21,6 +21,13 @@ point3 sample_unit_sphere(point3 center) {
   }
 }
 
+point3 sample_cylinder(point3 center) {
+  auto a = random_double(0, 2*pi);
+  auto z = random_double(-1, 1);
+  auto r = sqrt(1 - z*z);
+  return center + vec3(r*cos(a), r*sin(a), z);
+}
+
 // ray_color samples the color of a scene using the given ray.
 color ray_color(
   const ray &r,
@@ -41,9 +48,11 @@ color ray_color(
   if (scene.hit(r, 0.001, infinity, hit)) {
     color bounce_color;
 
-    point3 unit_sphere_sample_point
-      = sample_unit_sphere(hit.p + unit_vector(hit.normal));
-    ray bounce_ray(hit.p, unit_sphere_sample_point - hit.p);
+    // Sampling a cylinder produces a more uniform scattering, whereas sampling
+    // a unit sphere scatters with a bias towards the normal.
+    point3 cylinder_sample_point = sample_cylinder(hit.p + hit.normal);
+
+    ray bounce_ray(hit.p, cylinder_sample_point - hit.p);
     bounce_color = ray_color(
       bounce_ray,
       scene,
