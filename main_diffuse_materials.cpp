@@ -21,6 +21,17 @@ point3 sample_unit_sphere(point3 center) {
   }
 }
 
+point3 sample_unit_hemisphere(point3 center, const vec3& normal) {
+  vec3 in_unit_sphere = sample_unit_sphere(center);
+  if (dot(in_unit_sphere, normal) > 0.0) {
+    // In the same hemisphere as the normal.
+    return center + in_unit_sphere;
+  }
+  else {
+    return center - in_unit_sphere;
+  }
+}
+
 point3 sample_cylinder(point3 center) {
   auto a = random_double(0, 2*pi);
   auto z = random_double(-1, 1);
@@ -48,11 +59,10 @@ color ray_color(
   if (scene.hit(r, 0.001, infinity, hit)) {
     color bounce_color;
 
-    // Sampling a cylinder produces a more uniform scattering, whereas sampling
-    // a unit sphere scatters with a bias towards the normal.
-    point3 cylinder_sample_point = sample_cylinder(hit.p + hit.normal);
+    point3 hemisphere_sample_point 
+      = sample_unit_hemisphere(hit.p + hit.normal, hit.normal);
 
-    ray bounce_ray(hit.p, cylinder_sample_point - hit.p);
+    ray bounce_ray(hit.p, hemisphere_sample_point - hit.p);
     bounce_color = ray_color(
       bounce_ray,
       scene,
@@ -127,7 +137,7 @@ int main() {
         auto v = (double(j) + sample_offset_v) / (double(image_height) - 1);
         ray r = cam.get_ray(u, v);
         pixel_color += ray_color(
-          r, scene, bg_color_1, bg_color_2, 0.5, max_bounces, true
+          r, scene, bg_color_1, bg_color_2, 0.5, max_bounces, false
         );
       }
       write_color(std::cout, pixel_color, samples_per_pixel);
