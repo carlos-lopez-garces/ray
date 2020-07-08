@@ -28,4 +28,21 @@ public:
   color albedo;
 };
 
+class metal : public material {
+public:
+  metal(color albedo) : albedo(albedo) {}
+
+  virtual bool scatter(
+    const ray& r, const hit_record& hit, color& attenuation, ray& scattered
+  ) const {
+    vec3 reflected 
+      = reflect(unit_vector(r.direction()), hit.normal);
+    scattered = ray(hit.p, reflected);
+    attenuation = this->albedo;
+    return dot(scattered.direction(), hit.normal) > 0;
+  }
+
+  color albedo;
+};
+
 #endif
