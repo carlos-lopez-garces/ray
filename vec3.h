@@ -113,6 +113,19 @@ inline vec3 reflect(const vec3& v, const vec3& normal) {
   return v - 2 * dot(v, normal) * normal;
 }
 
+inline vec3 refract(
+  const vec3& v, const vec3& normal, double eta_over_etap
+) {
+  // Theta is the angle of incidence.
+  auto cos_theta = dot(-v, normal);
+  // I don't understand why these give you the components of the refracted ray.
+  vec3 refracted_perpendicular
+    = eta_over_etap * (v + cos_theta * normal);
+  vec3 refracted_parallel 
+    = -sqrt(fabs(1.0 - refracted_perpendicular.length_squared())) * normal;
+  return refracted_perpendicular + refracted_parallel;
+}
+
 inline vec3 unit_vector(vec3 v) {
   return v / v.length();
 }

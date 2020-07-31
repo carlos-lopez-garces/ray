@@ -5,6 +5,12 @@
 #include "hittable.h"
 #include "common.h"
 
+double schlick(double cos_theta, double refractive_idx) {
+  auto r0 = (1 - refractive_idx) / (1 + refractive_idx);
+  r0 = r0 * r0;
+  return r0 + (1 - r0) * pow((1 - cos_theta), 5);
+}
+
 class material {
 public:
   virtual bool scatter(
@@ -76,6 +82,57 @@ private:
 public:
   color albedo;
   double fuzz;
+};
+
+class dielectric : public material {
+public:
+  dielectric(double refractive_idx) : refractive_idx(refractive_idx) {}
+
+  virtual bool scatter(
+    const ray& r, const hit_record& hit, color& attenuation, ray& scattered
+  ) const {
+    attenuation = color(1.0, 1.0, 1.0);
+    const double air_refractive_idx = 1.0;
+    
+    double eta_over_etap;
+    if (hit.front_face) {
+      // Ray hits surface from outside, changing medium from air to dielectric.
+      eta_over_etap = air_refractive_idx/ this->refractive_idx;
+    } else {
+      // Ray is exiting the interior of the surface, changing medium from
+      // dielectric to air.
+      eta_over_etap = this->refractive_idx / air_refractive_idx;
+    }
+
+    // Theta is the angle of incidence.
+    double cos_theta = fmin(dot(-unit_vector(r.direction()), hit.normal), 1.0);
+    // Trigonometric identity.
+    double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
+
+    if (eta_over_etap * sin_theta > 1.0) {
+      // No solution to Snell's law. Must reflect.
+      vec3 reflected = reflect(unit_vector(r.direction()), hit.normal);
+      scattered = ray(hit.p, reflected);
+      return true;
+    }
+
+    double reflect_prob = schlick(cos_theta, eta_over_etap);
+    if (random_double() < reflect_prob)
+    {
+      vec3 reflected = reflect(unit_vector(r.direction()), hit.normal);
+      scattered = ray(hit.p, reflected);
+      return true;
+    }
+
+    vec3 refracted = refract(
+      unit_vector(r.direction()), hit.normal, eta_over_etap
+    );
+    scattered = ray(hit.p, refracted);
+    return true;
+  }
+
+public:
+  double refractive_idx;
 };
 
 #endif
