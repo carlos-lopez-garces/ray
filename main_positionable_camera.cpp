@@ -73,7 +73,7 @@ int main() {
 
   hittable_list scene;
 
-  shared_ptr<fuzzy> mat1 = make_shared<fuzzy>(color(0.0, 0.0, 0.0), 0.5);
+  shared_ptr<fuzzy> mat1 = make_shared<fuzzy>(color(0.2, 0.2, 0.2), 0.5);
   scene.add(
     make_shared<sphere>(
       point3(1.0, 0, -1),
@@ -130,7 +130,9 @@ int main() {
       )
   );
 
-  camera cam(point3(-2, 2, 1), point3(0, 0, -1), vec3(0, 1, 0), 20, aspect_ratio);
+  point3 look_from(3, 3, 2);
+  point3 look_at(0, 0, -1);
+  camera cam(look_from, look_at, vec3(0, 1, 0), 20, aspect_ratio, 2.0, (look_from - look_at).length());
 
   for (int j = image_height - 1; j >= 0; --j) {
     std::cerr << "\rScanlines remaining: " << j << " " << std::flush;
