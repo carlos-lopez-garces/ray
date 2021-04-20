@@ -1,5 +1,7 @@
 This repository is the result of studying the Ray Tracing in One Weekend series, Peter Shirley ([online edition](https://raytracing.github.io/)).
 
+![Book1 image](images/1_Ray_Tracing_In_One_Weekend.jpg)
+
 The sections I've covered are marked next. My personal notes are found in **[notes](notes/)**.
 
 1 Overview
